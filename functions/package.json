@@ -1,31 +1,23 @@
 {
-  "name": "your-action-app",
-  "description": "This is your Action's webhook",
-  "version": "0.0.1",
-  "private": true,
-  "license": "Apache Version 2.0",
-  "author": "Google Inc.",
-  "engines": {
-    "node": ">=6.11.1"
-  },
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
   "scripts": {
-    "lint": "eslint --fix \"**/*.js\"",
-    "start": "firebase serve --only functions",
+    "lint": "./node_modules/.bin/eslint .",
+    "serve": "firebase serve --only functions",
+    "shell": "firebase experimental:functions:shell",
+    "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "test": "npm run lint"
+    "logs": "firebase functions:log"
   },
   "dependencies": {
-    "actions-on-google": "^1.5.0",
-    "firebase-admin": "^4.2.1",
-    "firebase-functions": "^0.5.7"
+    "actions-on-google": "^1.8.2",
+    "firebase-admin": "~5.8.1",
+    "firebase-functions": "^0.8.1",
+    "date-utils": "1.2.21"
   },
   "devDependencies": {
-    "eslint": "^3.19.0",
-    "eslint-config-semistandard": "^11.0.0",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.3.0",
-    "eslint-plugin-node": "^5.0.0",
-    "eslint-plugin-promise": "^3.5.0",
-    "eslint-plugin-standard": "^3.0.1"
-  }
+    "eslint": "^4.12.0",
+    "eslint-plugin-promise": "^3.6.0"
+  },
+  "private": true
 }

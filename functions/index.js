@@ -17,7 +17,7 @@ const ACTION_PREV = 'prev';
 const ACTION_CONTINUE = 'continue';
 
 // texts
-const TXT_NEW_GAME = '新しいゲームの準備ができました。1枚目の札を読んでいいですか？';
+const TXT_NEW_GAME = '新しいゲームの準備ができました。「次の札を読んで」と言って下さい';
 const TXT_CONTINUE = 'では前回の続きを遊びましょう。「次の札を読んで」と言って下さい';
 const TXT_READY = 'それでは読みます。';
 const TXT_REPEAT = 'もう一度読みます。';
@@ -36,16 +36,20 @@ exports.test = functions.https.onRequest((request, response) => {
   const uid = app.getUser().userId;
   console.log('[debug] userid : ' + uid);
 
+  // シャッフル
+  var shuffled = () => {
+		var shuffle = () => { return Math.random() - 0.5 };
+		var nums = [...Array(44).keys()];
+		return nums.sort(shuffle);
+  };
+
   // 読み札の取得
-  const card = (cards, p, r1, r2) => {
+  const card = (cards, p, nums) => {
     // pがcardsの範囲にない場合はnull
     if (p < 0 || p >= cards.length ) {
       return null;
     }
-    const shuffled = cards.sort(() => {
-      return r1 - r2;
-    });
-    return shuffled[p];
+    return cards[nums[p]];
   };
 
   // ユーザー情報取得
@@ -65,7 +69,7 @@ exports.test = functions.https.onRequest((request, response) => {
         if (num <= 0) num = 1;
 
         // 読み札を取得
-        const c = card(cards, user['p'] - num, user['r1'], user['r2']);
+        const c = card(cards, user['p'] - num, user['nums']);
         if (c === null) {
           app.ask(num + TXT_ERR_PREV);
         }
@@ -89,7 +93,7 @@ exports.test = functions.https.onRequest((request, response) => {
         const cards = snapshot.val() || [];
 
         // 読み札を取得
-        const c = card(cards, user['p'], user['r1'], user['r2']);
+        const c = card(cards, user['p'], user['nums']);
         if (c === null) {
           app.tell(TXT_ERR_NOTHING_CARD);
         }
@@ -117,7 +121,7 @@ exports.test = functions.https.onRequest((request, response) => {
         user['p'] = user['p'] + 1;
 
         // 読み札を取得
-        const c = card(cards, user['p'], user['r1'], user['r2']);
+        const c = card(cards, user['p'], user['nums']);
         if (c === null) {
           app.tell(TXT_ERR_NOTHING_CARD);
         }
@@ -152,8 +156,7 @@ exports.test = functions.https.onRequest((request, response) => {
       // 前回のゲーム情報がなかったらニューゲーム
       user['updated_at'] = new Date().toFormat("YYYYMMDDHH24MISS");
       user['p'] = -1;
-      user['r1'] = Math.random();
-      user['r2'] = Math.random();
+      user['nums'] = shuffled();
 
       // DB更新
       admin.database().ref('users/' + uid).update(user).then(() => {
@@ -172,8 +175,7 @@ exports.test = functions.https.onRequest((request, response) => {
     const startHandler = (app) => {
       user['updated_at'] = new Date().toFormat("YYYYMMDDHH24MISS");
       user['p'] = -1;
-      user['r1'] = Math.random();
-      user['r2'] = Math.random();
+      user['nums'] = shuffled();
 
       // DB更新
       admin.database().ref('users/' + uid).update(user).then(() => {
